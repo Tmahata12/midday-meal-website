@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RHS MDM System V2.0</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>">
+    
+    <!-- Authentication Module -->
+    <script src="auth.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-container {
+            text-align: center;
+            color: white;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <h1>🍽️ RHS MDM System V2.0</h1>
+        <p>Loading...</p>
+    </div>
+
+    <script>
+        // Check authentication and redirect accordingly
+        async function checkAuthAndRedirect() {
+            try {
+                // Get token
+                const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+                
+                if (!token) {
+                    // No token, redirect to login
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Verify token
+                const API_URL = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:3000/api' 
+                    : `${window.location.protocol}//${window.location.host}/api`;
+
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Valid token, redirect to dashboard
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // Invalid token, clear and redirect to login
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('user');
+                    sessionStorage.removeItem('authToken');
+                    sessionStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                // On error, redirect to login
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Run check on page load
+        checkAuthAndRedirect();
+    </script>
+</body>
+</html>

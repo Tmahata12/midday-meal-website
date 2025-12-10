@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Logs - RHS MDM V2.0</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+    
+    <script src="auth.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-filter {
+            background: #667eea;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .logs-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .log-item {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.2s;
+        }
+
+        .log-item:hover {
+            background: #f8f9fa;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .log-user {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .log-time {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .log-action {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .action-create { background: #e8f5e9; color: #2e7d32; }
+        .action-update { background: #fff3e0; color: #f57c00; }
+        .action-delete { background: #ffebee; color: #c62828; }
+        .action-login { background: #e3f2fd; color: #1976d2; }
+        .action-logout { background: #f3e5f5; color: #7b1fa2; }
+
+        .log-module {
+            display: inline-block;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .log-details {
+            color: #666;
+            margin-top: 8px;
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .filters {
+                flex-direction: column;
+            }
+
+            .filter-group {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="btn btn-back" onclick="location.href='dashboard.html'">← Back</button>
+            <h1>📋 Activity Logs</h1>
+            <p>View system activity and user actions</p>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="moduleFilter">Module</label>
+                <select id="moduleFilter">
+                    <option value="">All Modules</option>
+                    <option value="formC">Form C</option>
+                    <option value="bank">Bank Ledger</option>
+                    <option value="rice">Rice Ledger</option>
+                    <option value="expense">Expense</option>
+                    <option value="auth">Authentication</option>
+                    <option value="users">User Management</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="actionFilter">Action</label>
+                <select id="actionFilter">
+                    <option value="">All Actions</option>
+                    <option value="create">Create</option>
+                    <option value="update">Update</option>
+                    <option value="delete">Delete</option>
+                    <option value="login">Login</option>
+                    <option value="logout">Logout</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="limitFilter">Show</label>
+                <select id="limitFilter">
+                    <option value="50">Last 50</option>
+                    <option value="100" selected>Last 100</option>
+                    <option value="200">Last 200</option>
+                    <option value="500">Last 500</option>
+                </select>
+            </div>
+
+            <button class="btn btn-filter" onclick="loadLogs()">Filter</button>
+        </div>
+
+        <div class="logs-container" id="logsContainer">
+            <div class="loading">
+                Loading activity logs...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logs = [];
+
+        // Load logs
+        async function loadLogs() {
+            try {
+                await authManager.requireAuth(['admin', 'teacher']);
+
+                const module = document.getElementById('moduleFilter').value;
+                const action = document.getElementById('actionFilter').value;
+                const limit = document.getElementById('limitFilter').value;
+
+                const params = new URLSearchParams();
+                if (module) params.append('module', module);
+                if (action) params.append('action', action);
+                if (limit) params.append('limit', limit);
+
+                const response = await apiCall(`/activity-logs?${params.toString()}`);
+
+                if (response.success) {
+                    logs = response.data;
+                    displayLogs();
+                }
+            } catch (error) {
+                console.error('Load logs error:', error);
+                authManager.showNotification('Error loading logs', 'error');
+            }
+        }
+
+        // Display logs
+        function displayLogs() {
+            const container = document.getElementById('logsContainer');
+
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="loading">No activity logs found</div>';
+                return;
+            }
+
+            container.innerHTML = logs.map(log => `
+                <div class="log-item">
+                    <div class="log-header">
+                        <div class="log-user">${log.user?.name || 'Unknown'}</div>
+                        <div class="log-time">${formatTime(log.createdAt)}</div>
+                    </div>
+                    <div>
+                        <span class="log-action action-${log.action}">${getActionText(log.action)}</span>
+                        <span class="log-module">${getModuleText(log.module)}</span>
+                    </div>
+                    ${log.details ? `<div class="log-details">${log.details}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Get action text in Bengali
+        function getActionText(action) {
+            const actions = {
+                create: 'তৈরি',
+                update: 'আপডেট',
+                delete: 'মুছে ফেলা',
+                login: 'লগইন',
+                logout: 'লগআউট',
+                import: 'ইম্পোর্ট',
+                backup: 'ব্যাকআপ'
+            };
+            return actions[action] || action;
+        }
+
+        // Get module text
+        function getModuleText(module) {
+            const modules = {
+                formC: 'Form C',
+                bank: 'Bank Ledger',
+                rice: 'Rice Ledger',
+                expense: 'Expense Ledger',
+                auth: 'Authentication',
+                users: 'User Management',
+                cooks: 'Cooks',
+                staff: 'Staff',
+                settings: 'Settings',
+                system: 'System'
+            };
+            return modules[module] || module;
+        }
+
+        // Format time
+        function formatTime(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleString('bn-BD', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // Load logs on page load
+        window.addEventListener('load', loadLogs);
+    </script>
+</body>
+</html>
