@@ -2,7 +2,7 @@
   "name":  "midday-meal-website",
   "version": "1.0.0",
   "description": "Midday meal scheme website",
-  "main": "app.js",
+  main": "server.js",
   "scripts":  {
     "start": "start": "node server.js"
   },
