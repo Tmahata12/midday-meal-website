@@ -798,3 +798,79 @@ process.on('SIGINT', async () => {
     await mongoose.connection.close();
     process.exit(0);
 });
+// ========================================
+// ROOT ROUTE
+// ========================================
+app.get('/', (req, res) => {
+    const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>RHS MDM</title></head><body><h1>RHS MDM System</h1><p>Server running on port ' + PORT + '</p><a href="/api/health">Health Check</a></body></html>';
+    res.send(html);
+});
+
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        success: true,
+        status: 'OK',
+        port: PORT,
+        mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+    });
+});
+
+// ========================================
+// ERROR HANDLING
+// ========================================
+app. use((err, req, res, next) => {
+    console.error('Error:', err.message);
+    res.status(500).json({ 
+        success: false, 
+        error: 'Server error',
+        message: err.message 
+    });
+});
+
+// ========================================
+// INITIALIZE ADMIN
+// ========================================
+async function initializeDefaultAdmin() {
+    try {
+        const adminEmail = 'admin@ramnagarhs.edu';
+        const existingAdmin = await User.findOne({ email: adminEmail });
+        
+        if (!existingAdmin) {
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+            await User.create({
+                name: 'Admin',
+                email: adminEmail,
+                password: hashedPassword,
+                role: 'admin',
+                status: 'active'
+            });
+            console.log('Default admin created');
+        }
+    } catch (error) {
+        console.error('Error creating admin:', error.  message);
+    }
+}
+
+mongoose.connection.once('open', async () => {
+    console.log('Initializing auth...');
+    await initializeDefaultAdmin();
+});
+
+// ========================================
+// START SERVER
+// ========================================
+const server = app.listen(PORT, () => {
+    console.log('RHS MDM Server running on port', PORT);
+});
+
+server.on('error', (err) => {
+    console.error('Server startup error:', err);
+    process.exit(1);
+});
+
+process.on('SIGINT', async () => {
+    console.log('Shutting down.. .');
+    await mongoose.connection. close();
+    server.close();
+    process.exit(0);
+});
