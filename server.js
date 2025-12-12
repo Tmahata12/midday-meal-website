@@ -787,13 +787,9 @@ mongoose.connection.once('open', async () => {
 // ========================================
 // START SERVER
 // ========================================
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('\n' + '='.repeat(50));
-    console.log('🍽️  RHS MDM Management System Server');
-    console.log('📡 Server running on port ' + PORT);
-    console.log('🌐 Access:  http://localhost:' + PORT);
-    console.log('🍃 MongoDB:  ' + (mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting...  ⏳'));
-    console.log('='.repeat(50) + '\n');
+app.listen(PORT, () => {
+    console.log('Server running on port ' + PORT);
+    console.log('MongoDB:  ' + (mongoose.connection.  readyState === 1 ?  'Connected' : 'Connecting...'));
 });
 
 // Graceful shutdown
