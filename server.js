@@ -21,16 +21,16 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
-app.use(express.static(__dirname)); // Serve static files from current directory
+app.use(express.static(__dirname));
 
 // ========================================
 // MONGODB CONNECTION
 // ========================================
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
+mongoose. connect(process.env.MONGODB_URI, {
+    useNewUrlParser:  true,
     useUnifiedTopology: true
 })
-.then(() => console.log('✅ MongoDB Connected Successfully!'))
+.then(() => console.log('✅ MongoDB Connected Successfully! '))
 .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 // ========================================
@@ -54,7 +54,7 @@ const formCSchema = new mongoose.Schema({
 
 // Bank Ledger Schema
 const bankLedgerSchema = new mongoose.Schema({
-    date: { type: String, required: true },
+    date: { type:  String, required: true },
     type: { type: String, enum: ['receipt', 'payment'], required: true },
     particulars: String,
     voucherNo: String,
@@ -65,17 +65,17 @@ const bankLedgerSchema = new mongoose.Schema({
 
 // Rice Ledger Schema
 const riceLedgerSchema = new mongoose.Schema({
-    date: { type: String, required: true },
+    date: { type: String, required:  true },
     type: { type: String, enum: ['receipt', 'issue'], required: true },
     particulars: String,
-    quantity: { type: Number, required: true },
+    quantity: { type: Number, required:  true },
     balance: Number,
     remarks: String
 }, { timestamps: true });
 
 // Expense Ledger Schema
 const expenseLedgerSchema = new mongoose.Schema({
-    date: { type: String, required: true },
+    date: { type: String, required:  true },
     particulars: String,
     voucherNo: String,
     amount: { type: Number, required: true },
@@ -85,7 +85,7 @@ const expenseLedgerSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Cook Schema
-const cookSchema = new mongoose.Schema({
+const cookSchema = new mongoose. Schema({
     name: { type: String, required: true },
     role: String,
     phone: String,
@@ -101,7 +101,7 @@ const staffSchema = new mongoose.Schema({
     phone: String,
     email: String,
     joinDate: String,
-    status: { type: String, default: 'active' }
+    status: { type: String, default:  'active' }
 }, { timestamps: true });
 
 // Settings Schema
@@ -139,20 +139,9 @@ const settingsSchema = new mongoose.Schema({
     fundOpening: { type: Number, default: 120000 }
 }, { timestamps: true });
 
-// ========================================
-// MODELS
-// ========================================
-const FormC = mongoose.model('FormC', formCSchema);
-const BankLedger = mongoose.model('BankLedger', bankLedgerSchema);
-const RiceLedger = mongoose.model('RiceLedger', riceLedgerSchema);
-const ExpenseLedger = mongoose.model('ExpenseLedger', expenseLedgerSchema);
-const Cook = mongoose.model('Cook', cookSchema);
-const Staff = mongoose.model('Staff', staffSchema);
-const Settings = mongoose.model('Settings', settingsSchema);
-
-// User Schema for Authentication (V2.0)
+// User Schema
 const userSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    name: { type: String, required:  true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['admin', 'teacher', 'viewer'], default: 'viewer' },
@@ -163,21 +152,32 @@ const userSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-const User = mongoose.model('User', userSchema);
-
-// Activity Log Schema (V2.0)
+// Activity Log Schema
 const activityLogSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    user: { type: mongoose.Schema. Types.ObjectId, ref: 'User' },
     userName: String,
-    action: { type: String, required: true }, // 'create', 'update', 'delete', 'login', 'logout'
-    module: String, // 'FormC', 'Bank', 'Rice', 'Expense', 'Auth', 'Users'
+    action: { type: String, required: true },
+    module: String,
     details: String,
-    timestamp: { type: Date, default: Date.now }
+    timestamp: { type:  Date, default: Date.now }
 });
 
+// ========================================
+// MODELS
+// ========================================
+const FormC = mongoose.model('FormC', formCSchema);
+const BankLedger = mongoose.model('BankLedger', bankLedgerSchema);
+const RiceLedger = mongoose.model('RiceLedger', riceLedgerSchema);
+const ExpenseLedger = mongoose.model('ExpenseLedger', expenseLedgerSchema);
+const Cook = mongoose.model('Cook', cookSchema);
+const Staff = mongoose.model('Staff', staffSchema);
+const Settings = mongoose.model('Settings', settingsSchema);
+const User = mongoose.model('User', userSchema);
 const ActivityLog = mongoose.model('ActivityLog', activityLogSchema);
 
-// Authentication Middleware
+// ========================================
+// AUTHENTICATION MIDDLEWARE
+// ========================================
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -186,16 +186,15 @@ const authenticateToken = (req, res, next) => {
         return res.status(401).json({ success: false, message: 'Access token required' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, process. env.JWT_SECRET || 'default_secret_key', (err, user) => {
         if (err) {
             return res.status(403).json({ success: false, message: 'Invalid or expired token' });
         }
-        req.user = user;
+        req. user = user;
         next();
     });
 };
 
-// Role-based authorization middleware
 const authorizeRoles = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {
@@ -209,50 +208,32 @@ const authorizeRoles = (...roles) => {
 };
 
 // ========================================
-// API ROUTES
+// AUTHENTICATION ROUTES
 // ========================================
 
-// Health Check
-app.get('/api/health', (req, res) => {
-    res.json({ 
-        success: true, 
-        message: 'RHS MDM Server is running!',
-        timestamp: new Date().toISOString(),
-        mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
-    });
-});
-
-// ========================================
-// AUTHENTICATION ROUTES (V2.0)
-// ========================================
-
-// Register new user (Admin only)
+// Register
 app.post('/api/auth/register', authenticateToken, authorizeRoles('admin'), async (req, res) => {
     try {
         const { name, email, password, role, phone } = req.body;
 
-        // Check if user exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ success: false, message: 'User already exists' });
         }
 
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user
         const user = await User.create({
             name,
             email,
-            password: hashedPassword,
-            role: role || 'viewer',
+            password:  hashedPassword,
+            role:  role || 'viewer',
             phone,
             status: 'active'
         });
 
-        // Log activity
         await ActivityLog.create({
-            user: req.user.userId,
+            user: req.user. userId,
             userName: req.user.name,
             action: 'create',
             module: 'Users',
@@ -280,35 +261,29 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Find user
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(401).json({ success: false, message: 'Invalid email or password' });
+            return res. status(401).json({ success: false, message: 'Invalid email or password' });
         }
 
-        // Check if user is active
         if (user.status !== 'active') {
             return res.status(403).json({ success: false, message: 'Account is inactive' });
         }
 
-        // Verify password
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
-            return res.status(401).json({ success: false, message: 'Invalid email or password' });
+            return res.status(401).json({ success: false, message:  'Invalid email or password' });
         }
 
-        // Update last login
         user.lastLogin = new Date();
         await user.save();
 
-        // Generate JWT token
         const token = jwt.sign(
             { userId: user._id, email: user.email, role: user.role, name: user.name },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'default_secret_key',
             { expiresIn: '7d' }
         );
 
-        // Log activity
         await ActivityLog.create({
             user: user._id,
             userName: user.name,
@@ -335,10 +310,10 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// Get current user info
+// Get current user
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId).select('-password');
+        const user = await User.findById(req.user. userId).select('-password');
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
@@ -352,7 +327,6 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 // Logout
 app.post('/api/auth/logout', authenticateToken, async (req, res) => {
     try {
-        // Log activity
         await ActivityLog.create({
             user: req.user.userId,
             userName: req.user.name,
@@ -368,7 +342,7 @@ app.post('/api/auth/logout', authenticateToken, async (req, res) => {
     }
 });
 
-// Get activity logs (Admin and Teacher only)
+// Get activity logs
 app.get('/api/activity-logs', authenticateToken, authorizeRoles('admin', 'teacher'), async (req, res) => {
     try {
         const { module, action, limit = 50 } = req.query;
@@ -377,7 +351,7 @@ app.get('/api/activity-logs', authenticateToken, authorizeRoles('admin', 'teache
         if (module && module !== 'all') query.module = module;
         if (action && action !== 'all') query.action = action;
 
-        const logs = await ActivityLog.find(query)
+        const logs = await ActivityLog. find(query)
             .sort({ timestamp: -1 })
             .limit(parseInt(limit))
             .populate('user', 'name email');
@@ -389,7 +363,7 @@ app.get('/api/activity-logs', authenticateToken, authorizeRoles('admin', 'teache
     }
 });
 
-// Dashboard statistics (Authenticated users)
+// Dashboard statistics
 app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
     try {
         const stats = {
@@ -400,23 +374,20 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
             activeUsers: await User.countDocuments({ status: 'active' })
         };
 
-        // Get bank balance
         const bankLedger = await BankLedger.find().sort({ date: -1 }).limit(1);
         if (bankLedger.length > 0) {
-            stats.bankBalance = bankLedger[0].balance || 0;
+            stats. bankBalance = bankLedger[0].balance || 0;
         }
 
-        // Get rice stock
         const riceLedger = await RiceLedger.find().sort({ date: -1 }).limit(1);
         if (riceLedger.length > 0) {
-            stats.riceStock = riceLedger[0].closingStock || 0;
+            stats.riceStock = riceLedger[0].balance || 0;
         }
 
-        // Get total expense (last 30 days)
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const expenses = await ExpenseLedger.find({
-            date: { $gte: thirtyDaysAgo.toISOString().split('T')[0] }
+        const expenses = await ExpenseLedger. find({
+            date: { $gte: thirtyDaysAgo. toISOString().split('T')[0] }
         });
         stats.totalExpense = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
 
@@ -470,12 +441,12 @@ app.delete('/api/formC/:id', async (req, res) => {
 // ========================================
 // BANK LEDGER ROUTES
 // ========================================
-app.get('/api/bank', async (req, res) => {
+app. get('/api/bank', async (req, res) => {
     try {
-        const data = await BankLedger.find().sort({ date: 1 });
+        const data = await BankLedger. find().sort({ date: 1 });
         res.json({ success: true, data });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: error. message });
     }
 });
 
@@ -514,7 +485,7 @@ app.post('/api/rice', async (req, res) => {
     try {
         const ledger = new RiceLedger(req.body);
         await ledger.save();
-        res.json({ success: true, data: ledger });
+        res.json({ success: true, data:  ledger });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -545,7 +516,7 @@ app.post('/api/expense', async (req, res) => {
     try {
         const ledger = new ExpenseLedger(req.body);
         await ledger.save();
-        res.json({ success: true, data: ledger });
+        res.json({ success: true, data:  ledger });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -587,7 +558,7 @@ app.delete('/api/cooks/:id', async (req, res) => {
         await Cook.findByIdAndDelete(req.params.id);
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error:  error.message });
     }
 });
 
@@ -615,10 +586,10 @@ app.post('/api/staff', async (req, res) => {
 
 app.delete('/api/staff/:id', async (req, res) => {
     try {
-        await Staff.findByIdAndDelete(req.params.id);
+        await Staff. findByIdAndDelete(req. params.id);
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: error. message });
     }
 });
 
@@ -642,7 +613,7 @@ app.put('/api/settings', async (req, res) => {
     try {
         let settings = await Settings.findOne({ settingsId: 'default' });
         if (!settings) {
-            settings = new Settings({ settingsId: 'default', ...req.body });
+            settings = new Settings({ settingsId: 'default', ... req.body });
         } else {
             Object.assign(settings, req.body);
         }
@@ -654,66 +625,59 @@ app.put('/api/settings', async (req, res) => {
 });
 
 // ========================================
-// BULK IMPORT ROUTE (for initial data migration)
+// BULK IMPORT ROUTE
 // ========================================
-app.post('/api/import', async (req, res) => {
+app. post('/api/import', async (req, res) => {
     try {
         const { formC, bankLedger, riceLedger, expenseLedger, cooks, staff, settings } = req.body;
         
-        // Import Form C
         if (formC && formC.length > 0) {
             await FormC.deleteMany({});
             await FormC.insertMany(formC);
         }
         
-        // Import Bank Ledger
         if (bankLedger && bankLedger.length > 0) {
             await BankLedger.deleteMany({});
             await BankLedger.insertMany(bankLedger);
         }
         
-        // Import Rice Ledger
         if (riceLedger && riceLedger.length > 0) {
             await RiceLedger.deleteMany({});
             await RiceLedger.insertMany(riceLedger);
         }
         
-        // Import Expense Ledger
         if (expenseLedger && expenseLedger.length > 0) {
             await ExpenseLedger.deleteMany({});
             await ExpenseLedger.insertMany(expenseLedger);
         }
         
-        // Import Cooks
         if (cooks && cooks.length > 0) {
             await Cook.deleteMany({});
             await Cook.insertMany(cooks);
         }
         
-        // Import Staff
         if (staff && staff.length > 0) {
             await Staff.deleteMany({});
             await Staff.insertMany(staff);
         }
         
-        // Import Settings
         if (settings) {
             await Settings.findOneAndUpdate(
                 { settingsId: 'default' },
-                { settingsId: 'default', ...settings },
+                { settingsId: 'default', ... settings },
                 { upsert: true, new: true }
             );
         }
         
-        res.json({ 
+        res. json({ 
             success: true, 
-            message: 'Data imported successfully!',
+            message: 'Data imported successfully! ',
             imported: {
-                formC: formC?.length || 0,
+                formC: formC?. length || 0,
                 bankLedger: bankLedger?.length || 0,
-                riceLedger: riceLedger?.length || 0,
+                riceLedger: riceLedger?. length || 0,
                 expenseLedger: expenseLedger?.length || 0,
-                cooks: cooks?.length || 0,
+                cooks: cooks?. length || 0,
                 staff: staff?.length || 0
             }
         });
@@ -730,7 +694,7 @@ app.get('/api/backup', async (req, res) => {
         const [settings, formC, bank, rice, expense, cooks, staff] = await Promise.all([
             Settings.findOne({ settingsId: 'default' }),
             FormC.find().sort({ date: 1 }),
-            BankLedger.find().sort({ date: 1 }),
+            BankLedger. find().sort({ date: 1 }),
             RiceLedger.find().sort({ date: 1 }),
             ExpenseLedger.find().sort({ date: 1 }),
             Cook.find(),
@@ -756,20 +720,16 @@ app.get('/api/backup', async (req, res) => {
 });
 
 // ========================================
-// SERVE MAIN HTML FILE
+// ROOT ROUTE
 // ========================================
-// ========================================
-// ROOT ROUTES
-// ========================================
-
 app.get('/', (req, res) => {
     res.send(`
-        <!DOCTYPE html>
+        <! DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>RHS MDM Management System</title>
+            <title>RHS MDM System</title>
             <style>
                 * { margin: 0; padding: 0; box-sizing: border-box; }
                 body {
@@ -778,145 +738,98 @@ app.get('/', (req, res) => {
                     min-height: 100vh;
                     display: flex;
                     justify-content: center;
-                    align-items:  center;
+                    align-items: center;
                     padding: 20px;
                 }
                 .container {
                     background: white;
-                    padding: 50px;
+                    padding: 40px;
                     border-radius: 20px;
                     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                    max-width:  700px;
+                    max-width:  600px;
                     width: 100%;
-                    animation: fadeIn 0.5s ease-in;
                 }
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(-20px); }
-                    to { opacity: 1; transform:  translateY(0); }
+                h1 { 
+                    color: #2c3e50; 
+                    text-align:  center; 
+                    margin-bottom:  20px; 
+                    font-size: 2em;
                 }
-                h1 {
-                    color: #2c3e50;
-                    margin-bottom: 10px;
-                    font-size: 2.5em;
+                .subtitle {
                     text-align: center;
-                }
-                . subtitle {
-                    text-align: center;
-                    color:  #7f8c8d;
+                    color: #7f8c8d;
                     margin-bottom: 30px;
-                    font-size: 1.1em;
                 }
-                .status-card {
+                .status {
                     background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-                    color: #155724;
                     padding: 20px;
-                    border-radius: 15px;
+                    border-radius: 10px;
                     margin: 20px 0;
                     border-left: 5px solid #28a745;
                 }
-                .status-card h3 {
-                    margin-bottom: 15px;
-                    font-size: 1.3em;
+                .status p { 
+                    margin: 10px 0; 
+                    color: #155724;
                 }
-                .status-item {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 8px 0;
-                    border-bottom: 1px solid rgba(0,0,0,0.1);
+                .status strong {
+                    color: #0c3d1a;
                 }
-                .status-item:last-child {
-                    border-bottom: none;
-                }
-                .status-label {
-                    font-weight: 600;
-                }
-                .status-value {
-                    color:  #28a745;
-                    font-weight: bold;
-                }
-                .api-links {
-                    margin-top: 30px;
-                }
-                .api-links h3 {
-                    color: #2c3e50;
-                    margin-bottom: 15px;
-                    text-align: center;
-                }
-                .link-grid {
+                .links {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                    gap: 15px;
+                    gap: 10px;
+                    margin-top: 20px;
                 }
-                .api-link {
+                a {
                     display: block;
                     background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
                     color: white;
-                    padding: 15px 20px;
-                    border-radius: 10px;
-                    text-decoration: none;
+                    padding: 15px;
                     text-align: center;
+                    text-decoration: none;
+                    border-radius: 10px;
                     transition: all 0.3s;
                     font-weight: 500;
-                    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
                 }
-                .api-link:hover {
-                    transform: translateY(-3px);
-                    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+                a:hover { 
+                    background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+                    transform: translateY(-2px); 
+                    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
                 }
                 .footer {
                     margin-top:  30px;
                     text-align: center;
-                    color: #7f8c8d;
+                    color:  #7f8c8d;
                     font-size: 0.9em;
                 }
             </style>
         </head>
         <body>
             <div class="container">
-                <h1>🍽️ RHS MDM Management System</h1>
+                <h1>🍽️ RHS MDM System</h1>
                 <p class="subtitle">Ramnagar High School - Midday Meal Management</p>
                 
-                <div class="status-card">
-                    <h3>✅ System Status</h3>
-                    <div class="status-item">
-                        <span class="status-label">📡 Server Status:</span>
-                        <span class="status-value">Running</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">🍃 MongoDB: </span>
-                        <span class="status-value">Connected</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">🚀 Deployment:</span>
-                        <span class="status-value">Railway Cloud</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">⏰ Server Time:</span>
-                        <span class="status-value">${new Date().toLocaleString('en-IN', { timeZone:  'Asia/Kolkata' })}</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">🔐 Authentication:</span>
-                        <span class="status-value">Enabled</span>
-                    </div>
+                <div class="status">
+                    <p>✅ <strong>Server Status:</strong> Running</p>
+                    <p>📡 <strong>MongoDB:</strong> Connected</p>
+                    <p>🚀 <strong>Port:</strong> ${PORT}</p>
+                    <p>⏰ <strong>Time:</strong> ${new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
+                    <p>🔐 <strong>Authentication:</strong> Enabled</p>
                 </div>
-
-                <div class="api-links">
-                    <h3>📋 API Endpoints</h3>
-                    <div class="link-grid">
-                        <a href="/api/health" class="api-link">🔍 Health Check</a>
-                        <a href="/api/formC" class="api-link">📝 Form C Data</a>
-                        <a href="/api/bank" class="api-link">💰 Bank Ledger</a>
-                        <a href="/api/rice" class="api-link">🌾 Rice Ledger</a>
-                        <a href="/api/expense" class="api-link">💵 Expense Ledger</a>
-                        <a href="/api/settings" class="api-link">⚙️ Settings</a>
-                    </div>
+                
+                <div class="links">
+                    <a href="/api/health">🔍 Health Check</a>
+                    <a href="/api/formC">📝 Form C Data</a>
+                    <a href="/api/bank">💰 Bank Ledger</a>
+                    <a href="/api/rice">🌾 Rice Ledger</a>
+                    <a href="/api/expense">💵 Expense Ledger</a>
+                    <a href="/api/settings">⚙️ Settings</a>
                 </div>
-
+                
                 <div class="footer">
                     <p>🔒 Secured with JWT Authentication</p>
                     <p>Built with Node.js + Express + MongoDB</p>
-                    <p style="margin-top: 10px; font-size: 0.8em;">
-                        Default Login: <strong>admin@ramnagarhs. edu</strong> / <strong>admin123</strong>
+                    <p style="margin-top: 10px; font-size: 0.85em;">
+                        Default Login: <strong>admin@ramnagarhs.edu</strong> / <strong>admin123</strong>
                     </p>
                 </div>
             </div>
@@ -925,38 +838,24 @@ app.get('/', (req, res) => {
     `);
 });
 
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => {
     res.json({ 
         success: true,
         status: 'OK', 
         message: 'RHS MDM Server is running smoothly',
-        mongodb: mongoose.connection. readyState === 1 ?  'Connected' : 'Disconnected',
-        uptime:  Math.floor(process.uptime()),
-        timestamp: new Date().toISOString(),
-        environment: process.env. NODE_ENV || 'production',
-        port: PORT
-    });
-});
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({ 
-        success: true,
-        status: 'OK', 
-        message: 'RHS MDM Server is running smoothly',
-        mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+        mongodb: mongoose.connection.readyState === 1 ? 'Connected' :  'Disconnected',
+        port: PORT,
         uptime: Math.floor(process.uptime()),
         timestamp: new Date().toISOString(),
-        environment: process.env. NODE_ENV || 'production',
-        port: PORT
+        environment: process.env. NODE_ENV || 'production'
     });
 });
 
 // ========================================
 // ERROR HANDLING
 // ========================================
-app.use((err, req, res, next) => {
+app. use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ 
         success: false, 
@@ -964,8 +863,6 @@ app.use((err, req, res, next) => {
         message: err.message 
     });
 });
-
-// ========================================
 
 // ========================================
 // INITIALIZE DEFAULT ADMIN USER
@@ -989,7 +886,7 @@ async function initializeDefaultAdmin() {
             console.log('   🔑 Password: admin123\n');
         }
     } catch (error) {
-        console.error('❌ Error creating default admin:', error.message);
+        console.error('❌ Error creating default admin:', error. message);
     }
 }
 
@@ -999,15 +896,16 @@ mongoose.connection.once('open', async () => {
     await initializeDefaultAdmin();
 });
 
+// ========================================
 // START SERVER
 // ========================================
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`
 ╔══════════════════════════════════════════════════╗
 ║   🍽️  RHS MDM Management System Server          ║
 ║   📡 Server running on port ${PORT}               ║
-║   🌐 Access: http://localhost:${PORT}            ║
-║   🍃 MongoDB: ${mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting... ⏳'}  ║
+║   🌐 Access:  http://localhost:${PORT}            ║
+║   🍃 MongoDB: ${mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting...  ⏳'}  ║
 ╚══════════════════════════════════════════════════╝
     `);
 });
