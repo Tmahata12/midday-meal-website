@@ -778,7 +778,7 @@ app.get('/', (req, res) => {
                     min-height: 100vh;
                     display: flex;
                     justify-content: center;
-                    align-items: center;
+                    align-items:  center;
                     padding: 20px;
                 }
                 .container {
@@ -786,7 +786,7 @@ app.get('/', (req, res) => {
                     padding: 50px;
                     border-radius: 20px;
                     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                    max-width: 700px;
+                    max-width:  700px;
                     width: 100%;
                     animation: fadeIn 0.5s ease-in;
                 }
@@ -798,15 +798,15 @@ app.get('/', (req, res) => {
                     color: #2c3e50;
                     margin-bottom: 10px;
                     font-size: 2.5em;
-                    text-align:  center;
+                    text-align: center;
                 }
                 . subtitle {
                     text-align: center;
-                    color: #7f8c8d;
+                    color:  #7f8c8d;
                     margin-bottom: 30px;
                     font-size: 1.1em;
                 }
-                . status-card {
+                .status-card {
                     background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
                     color: #155724;
                     padding: 20px;
@@ -824,14 +824,14 @@ app.get('/', (req, res) => {
                     padding: 8px 0;
                     border-bottom: 1px solid rgba(0,0,0,0.1);
                 }
-                .status-item: last-child {
+                .status-item:last-child {
                     border-bottom: none;
                 }
                 .status-label {
-                    font-weight:  600;
+                    font-weight: 600;
                 }
                 .status-value {
-                    color: #28a745;
+                    color:  #28a745;
                     font-weight: bold;
                 }
                 .api-links {
@@ -864,14 +864,10 @@ app.get('/', (req, res) => {
                     box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
                 }
                 .footer {
-                    margin-top: 30px;
+                    margin-top:  30px;
                     text-align: center;
-                    color:  #7f8c8d;
+                    color: #7f8c8d;
                     font-size: 0.9em;
-                }
-                .emoji {
-                    font-size:  1.5em;
-                    margin-right: 10px;
                 }
             </style>
         </head>
@@ -896,7 +892,7 @@ app.get('/', (req, res) => {
                     </div>
                     <div class="status-item">
                         <span class="status-label">⏰ Server Time:</span>
-                        <span class="status-value">${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
+                        <span class="status-value">${new Date().toLocaleString('en-IN', { timeZone:  'Asia/Kolkata' })}</span>
                     </div>
                     <div class="status-item">
                         <span class="status-label">🔐 Authentication:</span>
@@ -927,6 +923,20 @@ app.get('/', (req, res) => {
         </body>
         </html>
     `);
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ 
+        success: true,
+        status: 'OK', 
+        message: 'RHS MDM Server is running smoothly',
+        mongodb: mongoose.connection. readyState === 1 ?  'Connected' : 'Disconnected',
+        uptime:  Math.floor(process.uptime()),
+        timestamp: new Date().toISOString(),
+        environment: process.env. NODE_ENV || 'production',
+        port: PORT
+    });
 });
 
 // Health check endpoint
