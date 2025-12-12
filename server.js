@@ -26,8 +26,8 @@ app.use(express.static(__dirname));
 // ========================================
 // MONGODB CONNECTION
 // ========================================
-mongoose. connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
+mongoose.connect(process.env. MONGODB_URI, {
+    useNewUrlParser:  true,
     useUnifiedTopology: true
 })
 .then(() => console.log('✅ MongoDB Connected Successfully! '))
@@ -54,7 +54,7 @@ const formCSchema = new mongoose.Schema({
 
 // Bank Ledger Schema
 const bankLedgerSchema = new mongoose.Schema({
-    date: { type: String, required: true },
+    date: { type:  String, required: true },
     type: { type: String, enum: ['receipt', 'payment'], required: true },
     particulars: String,
     voucherNo: String,
@@ -65,8 +65,8 @@ const bankLedgerSchema = new mongoose.Schema({
 
 // Rice Ledger Schema
 const riceLedgerSchema = new mongoose.Schema({
-    date: { type: String, required: true },
-    type:  { type: String, enum: ['receipt', 'issue'], required: true },
+    date: { type: String, required:  true },
+    type: { type: String, enum: ['receipt', 'issue'], required: true },
     particulars: String,
     quantity: { type: Number, required:  true },
     balance: Number,
@@ -91,7 +91,7 @@ const cookSchema = new mongoose. Schema({
     phone: String,
     salary: Number,
     joinDate: String,
-    status: { type: String, default: 'active' }
+    status: { type:  String, default: 'active' }
 }, { timestamps: true });
 
 // Staff Schema
@@ -100,7 +100,7 @@ const staffSchema = new mongoose.Schema({
     designation: String,
     phone: String,
     email: String,
-    joinDate:  String,
+    joinDate: String,
     status: { type: String, default:  'active' }
 }, { timestamps: true });
 
@@ -145,7 +145,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['admin', 'teacher', 'viewer'], default: 'viewer' },
-    status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    status: { type: String, enum:  ['active', 'inactive'], default: 'active' },
     phone: String,
     lastLogin: Date,
     createdAt: { type: Date, default: Date.now },
@@ -159,7 +159,7 @@ const activityLogSchema = new mongoose.Schema({
     action: { type: String, required: true },
     module: String,
     details: String,
-    timestamp: { type:  Date, default: Date.now }
+    timestamp: { type: Date, default: Date. now }
 });
 
 // ========================================
@@ -233,7 +233,7 @@ app.post('/api/auth/register', authenticateToken, authorizeRoles('admin'), async
         });
 
         await ActivityLog.create({
-            user: req.user. userId,
+            user: req.user.userId,
             userName: req.user.name,
             action: 'create',
             module: 'Users',
@@ -281,7 +281,7 @@ app.post('/api/auth/login', async (req, res) => {
         const token = jwt.sign(
             { userId: user._id, email: user.email, role: user.role, name: user.name },
             process.env.JWT_SECRET || 'default_secret_key',
-            { expiresIn: '7d' }
+            { expiresIn:  '7d' }
         );
 
         await ActivityLog.create({
@@ -296,7 +296,7 @@ app.post('/api/auth/login', async (req, res) => {
             success: true,
             message: 'Login successful',
             token,
-            user: {
+            user:  {
                 id: user._id,
                 name: user.name,
                 email: user.email,
@@ -313,7 +313,7 @@ app.post('/api/auth/login', async (req, res) => {
 // Get current user
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
     try {
-        const user = await User.findById(req.user. userId).select('-password');
+        const user = await User.findById(req. user.userId).select('-password');
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
@@ -374,7 +374,7 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
             activeUsers: await User.countDocuments({ status: 'active' })
         };
 
-        const bankLedger = await BankLedger.find().sort({ date: -1 }).limit(1);
+        const bankLedger = await BankLedger. find().sort({ date: -1 }).limit(1);
         if (bankLedger.length > 0) {
             stats. bankBalance = bankLedger[0].balance || 0;
         }
@@ -412,8 +412,8 @@ app.get('/api/formC', async (req, res) => {
 
 app.post('/api/formC', async (req, res) => {
     try {
-        const formC = new FormC(req.body);
-        await formC.save();
+        const formC = new FormC(req. body);
+        await formC. save();
         res.json({ success: true, data: formC });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -422,7 +422,7 @@ app.post('/api/formC', async (req, res) => {
 
 app.put('/api/formC/:id', async (req, res) => {
     try {
-        const formC = await FormC.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const formC = await FormC.findByIdAndUpdate(req.params. id, req.body, { new: true });
         res.json({ success: true, data: formC });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -434,14 +434,14 @@ app.delete('/api/formC/:id', async (req, res) => {
         await FormC.findByIdAndDelete(req.params.id);
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error:  error.message });
     }
 });
 
 // ========================================
 // BANK LEDGER ROUTES
 // ========================================
-app. get('/api/bank', async (req, res) => {
+app.get('/api/bank', async (req, res) => {
     try {
         const data = await BankLedger. find().sort({ date: 1 });
         res.json({ success: true, data });
@@ -545,7 +545,7 @@ app.get('/api/cooks', async (req, res) => {
 
 app.post('/api/cooks', async (req, res) => {
     try {
-        const cook = new Cook(req.body);
+        const cook = new Cook(req. body);
         await cook.save();
         res.json({ success: true, data: cook });
     } catch (error) {
@@ -558,7 +558,7 @@ app.delete('/api/cooks/:id', async (req, res) => {
         await Cook.findByIdAndDelete(req.params.id);
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ success: false, error:  error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -600,7 +600,7 @@ app.get('/api/settings', async (req, res) => {
     try {
         let settings = await Settings.findOne({ settingsId: 'default' });
         if (!settings) {
-            settings = new Settings({ settingsId:  'default' });
+            settings = new Settings({ settingsId: 'default' });
             await settings.save();
         }
         res.json({ success: true, data: settings });
@@ -691,7 +691,7 @@ app. post('/api/import', async (req, res) => {
 // ========================================
 app.get('/api/backup', async (req, res) => {
     try {
-        const [settings, formC, bank, rice, expense, cooks, staff] = await Promise. all([
+        const [settings, formC, bank, rice, expense, cooks, staff] = await Promise.all([
             Settings.findOne({ settingsId: 'default' }),
             FormC.find().sort({ date: 1 }),
             BankLedger. find().sort({ date: 1 }),
@@ -720,133 +720,23 @@ app.get('/api/backup', async (req, res) => {
 });
 
 // ========================================
-// ROOT ROUTE
+// ROOT ROUTE - SIMPLE VERSION
 // ========================================
 app.get('/', (req, res) => {
-    res.send(`<! DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RHS MDM System</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background:  linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow:  0 20px 60px rgba(0,0,0,0.3);
-            max-width: 600px;
-            width: 100%;
-        }
-        h1 { 
-            color: #2c3e50; 
-            text-align: center; 
-            margin-bottom: 20px; 
-            font-size: 2em;
-        }
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 30px;
-        }
-        .status {
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 5px solid #28a745;
-        }
-        .status p { 
-            margin: 10px 0; 
-            color: #155724;
-        }
-        .status strong {
-            color: #0c3d1a;
-        }
-        .links {
-            display: grid;
-            gap: 10px;
-            margin-top:  20px;
-        }
-        a {
-            display: block;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-            padding:  15px;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-        a:hover { 
-            background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
-            transform: translateY(-2px); 
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
-        }
-        .footer {
-            margin-top: 30px;
-            text-align:  center;
-            color: #7f8c8d;
-            font-size: 0.9em;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🍽️ RHS MDM System</h1>
-        <p class="subtitle">Ramnagar High School - Midday Meal Management</p>
-        
-        <div class="status">
-            <p>✅ <strong>Server Status:</strong> Running</p>
-            <p>📡 <strong>MongoDB:</strong> Connected</p>
-            <p>🚀 <strong>Port:</strong> ${PORT}</p>
-            <p>⏰ <strong>Time:</strong> ${new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
-            <p>🔐 <strong>Authentication:</strong> Enabled</p>
-        </div>
-        
-        <div class="links">
-            <a href="/api/health">🔍 Health Check</a>
-            <a href="/api/formC">📝 Form C Data</a>
-            <a href="/api/bank">💰 Bank Ledger</a>
-            <a href="/api/rice">🌾 Rice Ledger</a>
-            <a href="/api/expense">💵 Expense Ledger</a>
-            <a href="/api/settings">⚙️ Settings</a>
-        </div>
-        
-        <div class="footer">
-            <p>🔒 Secured with JWT Authentication</p>
-            <p>Built with Node.js + Express + MongoDB</p>
-            <p style="margin-top: 10px; font-size: 0.85em;">
-                Default Login: <strong>admin@ramnagarhs.edu</strong> / <strong>admin123</strong>
-            </p>
-        </div>
-    </div>
-</body>
-</html>`);
+    const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>RHS MDM System</title><style>body{font-family: Arial;background: linear-gradient(135deg,#667eea,#764ba2);display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}. container{background:#fff;padding:40px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:600px}h1{color:#2c3e50;text-align:center}p{color:#7f8c8d;text-align:center;margin: 10px 0}. status{background:#d4edda;padding:15px;border-radius:10px;margin:20px 0;color:#155724}a{display:block;background:#3498db;color:#fff;padding:12px;margin:8px 0;text-align:center;text-decoration:none;border-radius:8px}a:hover{background:#2980b9}</style></head><body><div class="container"><h1>🍽️ RHS MDM System</h1><p>Ramnagar High School - Midday Meal Management</p><div class="status"><p>✅ Server Running on Port:  ' + PORT + '</p><p>📡 MongoDB:  Connected</p><p>⏰ ' + new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'}) + '</p></div><a href="/api/health">🔍 Health Check</a><a href="/api/formC">📝 Form C Data</a><a href="/api/bank">💰 Bank Ledger</a><a href="/api/rice">🌾 Rice Ledger</a><a href="/api/expense">💵 Expense Ledger</a><a href="/api/settings">⚙️ Settings</a><p style="margin-top:20px;font-size:0.9em;color:#7f8c8d">Default Login: admin@ramnagarhs.edu / admin123</p></div></body></html>';
+    res.send(html);
 });
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
     res.json({ 
         success: true,
         status: 'OK', 
         message: 'RHS MDM Server is running smoothly',
         mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-        port: PORT,
+        port:  PORT,
         uptime: Math.floor(process.uptime()),
-        timestamp: new Date().toISOString(),
-        environment: process.env. NODE_ENV || 'production'
+        timestamp: new Date().toISOString()
     });
 });
 
@@ -857,7 +747,7 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ 
         success: false, 
-        error: 'Something went wrong! ',
+        error: 'Something went wrong!',
         message: err.message 
     });
 });
@@ -880,11 +770,11 @@ async function initializeDefaultAdmin() {
                 status: 'active'
             });
             console.log('\n✅ Default admin user created');
-            console.log('   📧 Email: admin@ramnagarhs. edu');
+            console.log('   📧 Email: admin@ramnagarhs.edu');
             console.log('   🔑 Password: admin123\n');
         }
     } catch (error) {
-        console.error('❌ Error creating default admin:', error.message);
+        console.error('❌ Error creating default admin:', error. message);
     }
 }
 
@@ -898,14 +788,12 @@ mongoose.connection.once('open', async () => {
 // START SERVER
 // ========================================
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`
-╔══════════════════════════════════════════════════╗
-║   🍽️  RHS MDM Management System Server          ║
-║   📡 Server running on port ${PORT}               ║
-║   🌐 Access:  http://localhost:${PORT}            ║
-║   🍃 MongoDB:  ${mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting...  ⏳'}  ║
-╚══════════════════════════════════════════════════╝
-    `);
+    console.log('\n' + '='.repeat(50));
+    console.log('🍽️  RHS MDM Management System Server');
+    console.log('📡 Server running on port ' + PORT);
+    console.log('🌐 Access:  http://localhost:' + PORT);
+    console.log('🍃 MongoDB:  ' + (mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting...  ⏳'));
+    console.log('='.repeat(50) + '\n');
 });
 
 // Graceful shutdown
