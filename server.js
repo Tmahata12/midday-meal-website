@@ -758,8 +758,189 @@ app.get('/api/backup', async (req, res) => {
 // ========================================
 // SERVE MAIN HTML FILE
 // ========================================
+// ========================================
+// ROOT ROUTES
+// ========================================
+
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/RHS_MDM_MONGODB_READY.html');
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>RHS MDM Management System</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background:  linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 20px;
+                }
+                .container {
+                    background: white;
+                    padding: 50px;
+                    border-radius: 20px;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    max-width: 700px;
+                    width: 100%;
+                    animation: fadeIn 0.5s ease-in;
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(-20px); }
+                    to { opacity: 1; transform:  translateY(0); }
+                }
+                h1 {
+                    color: #2c3e50;
+                    margin-bottom: 10px;
+                    font-size: 2.5em;
+                    text-align:  center;
+                }
+                . subtitle {
+                    text-align: center;
+                    color: #7f8c8d;
+                    margin-bottom: 30px;
+                    font-size: 1.1em;
+                }
+                . status-card {
+                    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+                    color: #155724;
+                    padding: 20px;
+                    border-radius: 15px;
+                    margin: 20px 0;
+                    border-left: 5px solid #28a745;
+                }
+                .status-card h3 {
+                    margin-bottom: 15px;
+                    font-size: 1.3em;
+                }
+                .status-item {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 8px 0;
+                    border-bottom: 1px solid rgba(0,0,0,0.1);
+                }
+                .status-item: last-child {
+                    border-bottom: none;
+                }
+                .status-label {
+                    font-weight:  600;
+                }
+                .status-value {
+                    color: #28a745;
+                    font-weight: bold;
+                }
+                .api-links {
+                    margin-top: 30px;
+                }
+                .api-links h3 {
+                    color: #2c3e50;
+                    margin-bottom: 15px;
+                    text-align: center;
+                }
+                .link-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 15px;
+                }
+                .api-link {
+                    display: block;
+                    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    text-decoration: none;
+                    text-align: center;
+                    transition: all 0.3s;
+                    font-weight: 500;
+                    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+                }
+                .api-link:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+                }
+                .footer {
+                    margin-top: 30px;
+                    text-align: center;
+                    color:  #7f8c8d;
+                    font-size: 0.9em;
+                }
+                .emoji {
+                    font-size:  1.5em;
+                    margin-right: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🍽️ RHS MDM Management System</h1>
+                <p class="subtitle">Ramnagar High School - Midday Meal Management</p>
+                
+                <div class="status-card">
+                    <h3>✅ System Status</h3>
+                    <div class="status-item">
+                        <span class="status-label">📡 Server Status:</span>
+                        <span class="status-value">Running</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">🍃 MongoDB: </span>
+                        <span class="status-value">Connected</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">🚀 Deployment:</span>
+                        <span class="status-value">Railway Cloud</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">⏰ Server Time:</span>
+                        <span class="status-value">${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">🔐 Authentication:</span>
+                        <span class="status-value">Enabled</span>
+                    </div>
+                </div>
+
+                <div class="api-links">
+                    <h3>📋 API Endpoints</h3>
+                    <div class="link-grid">
+                        <a href="/api/health" class="api-link">🔍 Health Check</a>
+                        <a href="/api/formC" class="api-link">📝 Form C Data</a>
+                        <a href="/api/bank" class="api-link">💰 Bank Ledger</a>
+                        <a href="/api/rice" class="api-link">🌾 Rice Ledger</a>
+                        <a href="/api/expense" class="api-link">💵 Expense Ledger</a>
+                        <a href="/api/settings" class="api-link">⚙️ Settings</a>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <p>🔒 Secured with JWT Authentication</p>
+                    <p>Built with Node.js + Express + MongoDB</p>
+                    <p style="margin-top: 10px; font-size: 0.8em;">
+                        Default Login: <strong>admin@ramnagarhs. edu</strong> / <strong>admin123</strong>
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ 
+        success: true,
+        status: 'OK', 
+        message: 'RHS MDM Server is running smoothly',
+        mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+        uptime: Math.floor(process.uptime()),
+        timestamp: new Date().toISOString(),
+        environment: process.env. NODE_ENV || 'production',
+        port: PORT
+    });
 });
 
 // ========================================
