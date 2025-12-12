@@ -724,7 +724,8 @@ app.get('/api/backup', async (req, res) => {
 // ========================================
 app.get('/', (req, res) => {
     res.send(`
-        <! DOCTYPE html>
+    //
+        <!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
