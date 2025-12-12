@@ -27,7 +27,7 @@ app.use(express.static(__dirname));
 // MONGODB CONNECTION
 // ========================================
 mongoose. connect(process.env.MONGODB_URI, {
-    useNewUrlParser:  true,
+    useNewUrlParser: true,
     useUnifiedTopology: true
 })
 .then(() => console.log('✅ MongoDB Connected Successfully! '))
@@ -54,7 +54,7 @@ const formCSchema = new mongoose.Schema({
 
 // Bank Ledger Schema
 const bankLedgerSchema = new mongoose.Schema({
-    date: { type:  String, required: true },
+    date: { type: String, required: true },
     type: { type: String, enum: ['receipt', 'payment'], required: true },
     particulars: String,
     voucherNo: String,
@@ -65,8 +65,8 @@ const bankLedgerSchema = new mongoose.Schema({
 
 // Rice Ledger Schema
 const riceLedgerSchema = new mongoose.Schema({
-    date: { type: String, required:  true },
-    type: { type: String, enum: ['receipt', 'issue'], required: true },
+    date: { type: String, required: true },
+    type:  { type: String, enum: ['receipt', 'issue'], required: true },
     particulars: String,
     quantity: { type: Number, required:  true },
     balance: Number,
@@ -74,8 +74,8 @@ const riceLedgerSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Expense Ledger Schema
-const expenseLedgerSchema = new mongoose.Schema({
-    date: { type: String, required:  true },
+const expenseLedgerSchema = new mongoose. Schema({
+    date: { type: String, required: true },
     particulars: String,
     voucherNo: String,
     amount: { type: Number, required: true },
@@ -100,7 +100,7 @@ const staffSchema = new mongoose.Schema({
     designation: String,
     phone: String,
     email: String,
-    joinDate: String,
+    joinDate:  String,
     status: { type: String, default:  'active' }
 }, { timestamps: true });
 
@@ -186,11 +186,11 @@ const authenticateToken = (req, res, next) => {
         return res.status(401).json({ success: false, message: 'Access token required' });
     }
 
-    jwt.verify(token, process. env.JWT_SECRET || 'default_secret_key', (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET || 'default_secret_key', (err, user) => {
         if (err) {
             return res.status(403).json({ success: false, message: 'Invalid or expired token' });
         }
-        req. user = user;
+        req.user = user;
         next();
     });
 };
@@ -306,7 +306,7 @@ app.post('/api/auth/login', async (req, res) => {
         });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ success: false, message: 'Server error during login' });
+        res.status(500).json({ success: false, message:  'Server error during login' });
     }
 });
 
@@ -351,7 +351,7 @@ app.get('/api/activity-logs', authenticateToken, authorizeRoles('admin', 'teache
         if (module && module !== 'all') query.module = module;
         if (action && action !== 'all') query.action = action;
 
-        const logs = await ActivityLog. find(query)
+        const logs = await ActivityLog.find(query)
             .sort({ timestamp: -1 })
             .limit(parseInt(limit))
             .populate('user', 'name email');
@@ -600,7 +600,7 @@ app.get('/api/settings', async (req, res) => {
     try {
         let settings = await Settings.findOne({ settingsId: 'default' });
         if (!settings) {
-            settings = new Settings({ settingsId: 'default' });
+            settings = new Settings({ settingsId:  'default' });
             await settings.save();
         }
         res.json({ success: true, data: settings });
@@ -691,7 +691,7 @@ app. post('/api/import', async (req, res) => {
 // ========================================
 app.get('/api/backup', async (req, res) => {
     try {
-        const [settings, formC, bank, rice, expense, cooks, staff] = await Promise.all([
+        const [settings, formC, bank, rice, expense, cooks, staff] = await Promise. all([
             Settings.findOne({ settingsId: 'default' }),
             FormC.find().sort({ date: 1 }),
             BankLedger. find().sort({ date: 1 }),
@@ -723,120 +723,117 @@ app.get('/api/backup', async (req, res) => {
 // ROOT ROUTE
 // ========================================
 app.get('/', (req, res) => {
-    res.send(`
-    //
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>RHS MDM System</title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body {
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background:  linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    min-height: 100vh;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    padding: 20px;
-                }
-                .container {
-                    background: white;
-                    padding: 40px;
-                    border-radius: 20px;
-                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                    max-width:  600px;
-                    width: 100%;
-                }
-                h1 { 
-                    color: #2c3e50; 
-                    text-align:  center; 
-                    margin-bottom:  20px; 
-                    font-size: 2em;
-                }
-                .subtitle {
-                    text-align: center;
-                    color: #7f8c8d;
-                    margin-bottom: 30px;
-                }
-                .status {
-                    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-                    padding: 20px;
-                    border-radius: 10px;
-                    margin: 20px 0;
-                    border-left: 5px solid #28a745;
-                }
-                .status p { 
-                    margin: 10px 0; 
-                    color: #155724;
-                }
-                .status strong {
-                    color: #0c3d1a;
-                }
-                .links {
-                    display: grid;
-                    gap: 10px;
-                    margin-top: 20px;
-                }
-                a {
-                    display: block;
-                    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-                    color: white;
-                    padding: 15px;
-                    text-align: center;
-                    text-decoration: none;
-                    border-radius: 10px;
-                    transition: all 0.3s;
-                    font-weight: 500;
-                }
-                a:hover { 
-                    background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
-                    transform: translateY(-2px); 
-                    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
-                }
-                .footer {
-                    margin-top:  30px;
-                    text-align: center;
-                    color:  #7f8c8d;
-                    font-size: 0.9em;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>🍽️ RHS MDM System</h1>
-                <p class="subtitle">Ramnagar High School - Midday Meal Management</p>
-                
-                <div class="status">
-                    <p>✅ <strong>Server Status:</strong> Running</p>
-                    <p>📡 <strong>MongoDB:</strong> Connected</p>
-                    <p>🚀 <strong>Port:</strong> ${PORT}</p>
-                    <p>⏰ <strong>Time:</strong> ${new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
-                    <p>🔐 <strong>Authentication:</strong> Enabled</p>
-                </div>
-                
-                <div class="links">
-                    <a href="/api/health">🔍 Health Check</a>
-                    <a href="/api/formC">📝 Form C Data</a>
-                    <a href="/api/bank">💰 Bank Ledger</a>
-                    <a href="/api/rice">🌾 Rice Ledger</a>
-                    <a href="/api/expense">💵 Expense Ledger</a>
-                    <a href="/api/settings">⚙️ Settings</a>
-                </div>
-                
-                <div class="footer">
-                    <p>🔒 Secured with JWT Authentication</p>
-                    <p>Built with Node.js + Express + MongoDB</p>
-                    <p style="margin-top: 10px; font-size: 0.85em;">
-                        Default Login: <strong>admin@ramnagarhs.edu</strong> / <strong>admin123</strong>
-                    </p>
-                </div>
-            </div>
-        </body>
-        </html>
-    `);
+    res.send(`<! DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RHS MDM System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:  linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow:  0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 { 
+            color: #2c3e50; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            font-size: 2em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .status {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+        }
+        .status p { 
+            margin: 10px 0; 
+            color: #155724;
+        }
+        .status strong {
+            color: #0c3d1a;
+        }
+        .links {
+            display: grid;
+            gap: 10px;
+            margin-top:  20px;
+        }
+        a {
+            display: block;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding:  15px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        a:hover { 
+            background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        .footer {
+            margin-top: 30px;
+            text-align:  center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ RHS MDM System</h1>
+        <p class="subtitle">Ramnagar High School - Midday Meal Management</p>
+        
+        <div class="status">
+            <p>✅ <strong>Server Status:</strong> Running</p>
+            <p>📡 <strong>MongoDB:</strong> Connected</p>
+            <p>🚀 <strong>Port:</strong> ${PORT}</p>
+            <p>⏰ <strong>Time:</strong> ${new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
+            <p>🔐 <strong>Authentication:</strong> Enabled</p>
+        </div>
+        
+        <div class="links">
+            <a href="/api/health">🔍 Health Check</a>
+            <a href="/api/formC">📝 Form C Data</a>
+            <a href="/api/bank">💰 Bank Ledger</a>
+            <a href="/api/rice">🌾 Rice Ledger</a>
+            <a href="/api/expense">💵 Expense Ledger</a>
+            <a href="/api/settings">⚙️ Settings</a>
+        </div>
+        
+        <div class="footer">
+            <p>🔒 Secured with JWT Authentication</p>
+            <p>Built with Node.js + Express + MongoDB</p>
+            <p style="margin-top: 10px; font-size: 0.85em;">
+                Default Login: <strong>admin@ramnagarhs.edu</strong> / <strong>admin123</strong>
+            </p>
+        </div>
+    </div>
+</body>
+</html>`);
 });
 
 // Health check
@@ -845,7 +842,7 @@ app.get('/health', (req, res) => {
         success: true,
         status: 'OK', 
         message: 'RHS MDM Server is running smoothly',
-        mongodb: mongoose.connection.readyState === 1 ? 'Connected' :  'Disconnected',
+        mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
         port: PORT,
         uptime: Math.floor(process.uptime()),
         timestamp: new Date().toISOString(),
@@ -856,11 +853,11 @@ app.get('/health', (req, res) => {
 // ========================================
 // ERROR HANDLING
 // ========================================
-app. use((err, req, res, next) => {
+app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ 
         success: false, 
-        error: 'Something went wrong!',
+        error: 'Something went wrong! ',
         message: err.message 
     });
 });
@@ -870,7 +867,7 @@ app. use((err, req, res, next) => {
 // ========================================
 async function initializeDefaultAdmin() {
     try {
-        const adminEmail = 'admin@ramnagarhs.edu';
+        const adminEmail = 'admin@ramnagarhs. edu';
         const existingAdmin = await User.findOne({ email: adminEmail });
         
         if (!existingAdmin) {
@@ -883,11 +880,11 @@ async function initializeDefaultAdmin() {
                 status: 'active'
             });
             console.log('\n✅ Default admin user created');
-            console.log('   📧 Email: admin@ramnagarhs.edu');
+            console.log('   📧 Email: admin@ramnagarhs. edu');
             console.log('   🔑 Password: admin123\n');
         }
     } catch (error) {
-        console.error('❌ Error creating default admin:', error. message);
+        console.error('❌ Error creating default admin:', error.message);
     }
 }
 
@@ -906,7 +903,7 @@ app.listen(PORT, '0.0.0.0', () => {
 ║   🍽️  RHS MDM Management System Server          ║
 ║   📡 Server running on port ${PORT}               ║
 ║   🌐 Access:  http://localhost:${PORT}            ║
-║   🍃 MongoDB: ${mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting...  ⏳'}  ║
+║   🍃 MongoDB:  ${mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting...  ⏳'}  ║
 ╚══════════════════════════════════════════════════╝
     `);
 });
